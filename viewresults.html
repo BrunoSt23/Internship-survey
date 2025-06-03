@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Survey Results</title>
+  <link rel="stylesheet" href="survey.css">
+</head>
+<body>
+
+<div class="top-links">
+    <a href="surveyinterface.html">Fill Out Survey</a>
+    <a href="viewresults.html">View Survey Results</a>
+</div>
+
+<div class="container">
+    <div id="summary-results">Loading...</div>
+</div>
+
+<script>
+  // function to calculate age from date of birth
+  function getAge(dob) {
+    if (!dob) return null;
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  let surveyList = JSON.parse(localStorage.getItem('surveyList')) || [];
+  if (!Array.isArray(surveyList)) {
+    surveyList = surveyList ? [surveyList] : [];
+  }
+  const resultsDiv = document.getElementById('summary-results');
+
+  if (surveyList.length === 0) {
+    resultsDiv.innerHTML = "<p>No Surveys Available.</p>";
+  } else {
+    // total of all categories in the surveys
+    const total = surveyList.length;
+
+    // age calculations
+    const ages = surveyList.map(s => getAge(s.dob)).filter(a => a !== null);
+    const avgAge = ages.length ? (ages.reduce((a, b) => a + b, 0) / ages.length).toFixed(1) : 'N/A';
+    const oldest = ages.length ? Math.max(...ages) : 'N/A';
+    const youngest = ages.length ? Math.min(...ages) : 'N/A';
+
+    // helper for food percentages, all included
+    function foodPct(food) {
+      const count = surveyList.filter(s => {
+        if (Array.isArray(s.favoriteFood)) {
+          return s.favoriteFood.includes(food);
+        }
+        return s.favoriteFood === food;
+      }).length;
+      return ((count / total) * 100).toFixed(1);
+    }
+
+    // helper for average rating
+    function avgRating(key) {
+      const ratings = surveyList.map(s => Number(s.ratings?.[key] || 0)).filter(n => n > 0);
+      return ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : 'N/A';
+    }
+
+    resultsDiv.innerHTML = `
+      <div style="margin-bottom:50px;">
+        <h3>Survey Results</h3>
+        <ul>
+          <li><strong>Total surveys:</strong> ${total}</li>
+          <li><strong>Average age:</strong> ${avgAge}</li>
+          <li><strong>Oldest person who participated in survey:</strong> ${oldest}</li>
+          <li><strong>Youngest person who participated in survey:</strong> ${youngest}</li>
+          <br>
+          <li><strong>Percentage who like Pizza:</strong> ${foodPct('Pizza')}%</li>
+          <li><strong>Percentage who like Pasta:</strong> ${foodPct('Pasta')}%</li>
+          <li><strong>Percentage who like Pap and Wors:</strong> ${foodPct('Pap and Wors')}%</li>
+          <br>
+          <li><strong>Average rating for "I like to watch movies":</strong> ${avgRating('watchMovies')}</li>
+          <li><strong>Average rating for "I like to listen to radio":</strong> ${avgRating('listenRadio')}</li>
+          <li><strong>Average rating for "I like to eat out":</strong> ${avgRating('eatOut')}</li>
+          <li><strong>Average rating for "I like to watch TV":</strong> ${avgRating('watchTV')}</li>
+        </ul>
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>
+
+
+
