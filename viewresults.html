@@ -29,7 +29,7 @@
     }
     return age;
   }
-
+//i used localStorage as a data retriever (database)
   let surveyList = JSON.parse(localStorage.getItem('surveyList')) || [];
   if (!Array.isArray(surveyList)) {
     surveyList = surveyList ? [surveyList] : [];
@@ -64,7 +64,7 @@
       const ratings = surveyList.map(s => Number(s.ratings?.[key] || 0)).filter(n => n > 0);
       return ratings.length ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1) : 'N/A';
     }
-
+//inner html that is responsible for the layout of the output that displays the results of survey results
     resultsDiv.innerHTML = `
       <div style="margin-bottom:50px;">
         <h3>Survey Results</h3>
